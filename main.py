@@ -16,11 +16,10 @@ if not os.path.isdir(outdir):  # check for existence of outdir, make if needed
 
 driver_path = '/usr/bin/chromedriver'   # webdriver, in this case must use chrome
 url = 'https://www.faxvin.com/license-plate-lookup/illinois' # url to scrape
-
+#url = 'https://www.searchquarry.com/reverse-license-plate-search'
 
 ### 1: PLATES TO CHECK
 
-# plates = ['CD45880', 'CD45881'] # test!
 plates = []
 for d1 in [3,5,9]:              # three possible first digits
     for d234 in range(1000):    # unsure of middle digits
