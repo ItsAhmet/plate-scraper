@@ -15,8 +15,8 @@ if not os.path.isdir(outdir):  # check for existence of outdir, make if needed
     os.mkdir(outdir)
 
 driver_path = '/usr/bin/chromedriver'   # webdriver, in this case must use chrome
-url = 'https://www.faxvin.com/license-plate-lookup/illinois' # url to scrape
-#url = 'https://www.searchquarry.com/reverse-license-plate-search'
+#url = 'https://www.faxvin.com/license-plate-lookup/illinois' # url to scrape
+url = 'https://www.searchquarry.com/reverse-license-plate-search'
 
 ### 1: PLATES TO CHECK
 
@@ -39,35 +39,74 @@ for plate in plates:
     # create new webdriver instance
     driver = webdriver.Chrome(driver_path)
     driver.get(url)
-    time.sleep(random.random()) # sleep some time, so website (hopefully) ignores bot
 
-    # identify the search bar
-    search_bar = driver.find_element('name', 'plate')
+    # navigate the website
+    if 'searchquarry' in url:
+        # click on license plate search
+        search_button = driver.find_element(By.CLASS_NAME, 'tab_button.license_plate_search_button')
+        search_button.click()
 
-    for letter in plate:  # send letters one at a time (bot tricking)
-        time.sleep(random.random()/10)
-        search_bar.send_keys(letter)
-    search_bar.send_keys('\n')
+        # click through popup window
+        popup_button = driver.find_element(By.CLASS_NAME, 'popup-button')
+        popup_button.click()
 
-    # wait for results to load, then write output
-    the_class_name = "tableinfo"
-    try: 
-        WebDriverWait(driver, 10).until(
-                EC.presence_of_element_located((By.CLASS_NAME, the_class_name))
-                )
-    except Exception as e:
-        print(e)
+        # enter info and search
+        search_bar = driver.find_element(By.CLASS_NAME, 'inl.licenseplate_input')
+        search_bar.send_keys(plate)    # type plate
+        search_bar.send_keys('\tIL')   # pick state from drop down
+        search_bar.send_keys('\t\t\n') # enter search
+
+        # wait (up to 60 s) for results to load, then write plate output to file
+        # unsuccessful search will say 'Try Members Area' for this website
+        the_class_name = "profile_ul"
+        try: 
+            WebDriverWait(driver, 60).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, the_class_name))
+                    )
+            search_results = driver.find_element(By.CLASS_NAME, the_class_name)
+
+            if verbose:
+                print(search_results.text)
+                print()
+
+            with open(outdir+plate+'.txt', 'w') as f:
+                f.write(search_results.text)
+   
+        except Exception as e:
+            print(e)
+        
         driver.quit()
+
+
+    elif 'faxvin' in url:
+        time.sleep(random.random()) # sleep some time, so website (hopefully) ignores bot
+        
+        # identify the search bar
+        search_bar = driver.find_element('name', 'plate')
+
+        for letter in plate:  # send letters one at a time (bot tricking)
+            time.sleep(random.random()/10)
+            search_bar.send_keys(letter)
+        search_bar.send_keys('\n')
+
+        # wait for results to load, then write output
+        the_class_name = "tableinfo"
+        try: 
+            WebDriverWait(driver, 10).until(
+                    EC.presence_of_element_located((By.CLASS_NAME, the_class_name))
+                    )
+            search_results = driver.find_element(By.CLASS_NAME, the_class_name)
+
+            if verbose:
+                print(search_results.text)
+                print()
+
+            with open(outdir+plate+'.txt', 'w') as f:
+                f.write(search_results.text)
+   
+        except Exception as e:
+            print(e)
     
-    search_results = driver.find_element(By.CLASS_NAME, the_class_name)
-
-    if verbose:
-        print(search_results.text)
-        print()
-
-    with open(outdir+plate+'.txt', 'w') as f:
-        f.write(search_results.text)
-
-    driver.quit()
+        driver.quit()
 
 
