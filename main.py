@@ -24,10 +24,10 @@ plates = []
 for d1 in [3,5,9]:              # three possible first digits
     for d234 in range(1000):    # unsure of middle digits
         plate = f'DC{d1}{d234:03}8'
-        if plate.count('3')==2: # check for two 3s
-            if ~os.path.exists(os.path.join(outdir, plate+'.txt')):   # check if data already exists in a file
+        #if plate.count('3')==2: # check for two 3s
+        if True:
+            if not os.path.exists(os.path.join(outdir, plate+'.txt')):   # check if data already exists in a file
                 plates.append(plate)
-
 
 ### 2: LOOP, DRIVER INSTANCE FOR EACH PLATE
 
